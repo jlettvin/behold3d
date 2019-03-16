@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="icon" type="image/x-icon" href="img/theBBK.png">
+		<script src="js/three.min.js"></script>
+		<script src="js/LoaderSupport.js"></script>
+		<script src="js/BBKLoader.js"></script>
+		<script src="js/MTLLoader.js"></script>
+		<script src="js/OBJLoader.js"></script>
+		<!--<script src="js/OBJLoader2.js"></script>-->
+		<meta name="viewport"
+			content="width=device-width,height=device-height,user-scalable=no">
+		<style>
+html, body   { height: 100%; background-color: #000000; color: white; }
+table        {
+	border: 1px solid white;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	height: 100%;
+	width: 100%;
+	margin-left: auto;
+	margin-right: auto;
+}
+tr, td           {
+	padding: 1px;
+	text-align: center;
+	vertical-align: top;
+}
+canvas       { width: 360; height: 360; text-align: center; }
+div          { text-align: center; }
+#alpha       { color: white; background-color: #aa0000; }
+#beta ,#b    { color: white; background-color: #007700; }
+#gamma,#c    { color: white; background-color: #000077; }
+#portrait,#a { color: white; background-color: #000000; }
+#message     { color: white; background-color: black; font-size: 8pt;  }
+#title       { font-size: 20pt; background-color: white; }
+.R           { color: #990000; }
+.G           { color: #009900; }
+.B           { color: #000099; }
+.Y           { color: #999900; }
+.C           { color: #009999; }
+.M           { color: #990099; }
+.X           { color: #000000; }
+.legal       { font-size: 5pt; }
+.container   {
+	height: 100%; min-height: 100%;
+	width: 100%; min-width: 100%;
+	position: fixed;
+}
+.center      {
+	margin: 0;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	-webkit-transform: translate(-50%, -50%);
+	-moz-transform: translate(-50%, -50%);
+	-ms-transform: translate(-50%, -50%);
+	-o-transform: translate(-50%, -50%);
+	transform: translate(-50%, -50%);
+}
+		</style>
+	</head><body>
+		<div id="container" class="container"><div id="behold3D" class="center">
+
+		<div id="boilerplate">
+			<table>
+				<tr>
+					<td id="title" colspan="3">
+						<b class="R">B</b><b class="Y">E</b><b class="G">H</b><b class="C">O</b><b class="B">L</b><b class="M">D</b><b class="X">3D&trade;</b>
+					</td>
+				</tr>
+				</tr><tr>
+					<td colspan="2">
+						<b class="legal">
+							Copyright&copy; 2019 Jonathan D. Lettvin,
+							All Rights Reserved
+						</b>
+					</td>
+				</tr>
+				<tr>
+					<td style="text-align: left">
+						<button id="refresh" onclick="location.reload(true)">
+							refresh
+						</button>
+					</td>
+					<td style="text-align: right">
+						<button id="expand" onclick="document.BEHOLD3D.expand()">
+							expand
+						</button>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2" style="text-align: center;">
+						<b id="message">Use a mobile device</b><br />
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div id="display">
+		</div>
+	</div></div></body>
+    <script>
+(function() {
+	"use strict";
+
+	//ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+	function message() {
+		var the = document.BEHOLD3D = document.BEHOLD3D || {}
+		var msg = '';
+		var d = document.getElementById('d');
+		//if (d !== null) d.innerHTML = 'debugging';
+		Array.from(arguments).forEach(function(arg) { msg += ' ' + arg; });
+		document.getElementById('message').innerHTML = msg;
+	}
+
+	//ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+	function HEREDOC (f) // PHP and shell style HEREDOC
+	{ return f.toString().split('\n').slice(1,-1).join('\n').normalize('NFC'); }
+
+	//ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+	// http://www.talkinghightech.com/en/creating-a-js-lock-for-a-resource/
+	class Lock {
+		constructor(counter) {
+			// how many users can use the resource at one, set 1 for regular lock 
+			this.counter = counter;
+			// all the callback that are waiting to use the resource
+			this.waiters = [];
+		}
+
+		hold(cb) {
+				// there is no one wating for the resource
+			if (this.counter > 0) {
+				this.counter--; // update the resource is in usage
+				cb();  // fire the requested callback
+			} else {
+				// the resoucre is in usage you need to wait for it
+				this.waiters.push(cb);
+			}
+		}
+
+		// resource was released - pop the next user who is waiting and fire it
+		release() {
+			// lock released - so we need to see who is wating and fire it
+			if (this.counter.length > 0) {
+				// get the latest request for the lock
+				const cb = this.waiters.pop();
+				// select the relevent one
+				process.nextTick(cb); // if you are on node
+				setTimeOut(()=>cb,0); // if you are in the browser
+			} else {
+				this.counter++;
+			}
+		}
+	}
+
+	//ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+	function openFullscreen() {
+		var elem = document.documentElement;
+		if (elem.requestFullscreen) {
+			elem.requestFullscreen();
+		} else if (elem.mozRequestFullScreen)    { /* Firefox */
+			elem.mozRequestFullScreen();
+		} else if (elem.webkitRequestFullscreen) { /* Chrome, Safari, Opera */
+			elem.webkitRequestFullscreen();
+		} else if (elem.msRequestFullscreen)     { /* IE/Edge */
+			elem.msRequestFullscreen();
+		} else if (elem.oRequestFullscreen)      {
+			elem.oRequestFullscreen();
+		}
+	}
+
+	//ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+	function closeFullscreen() {
+		var elem = document.documentElement;
+		if (document.exitFullscreen) {
+			document.exitFullscreen();
+		} else if (document.mozCancelFullScreen)  { /* Firefox */
+			document.mozCancelFullScreen();
+		} else if (document.webkitExitFullscreen) { /* Chrome, Safari, Opera */
+			document.webkitExitFullscreen();
+		} else if (document.msExitFullscreen)     { /* IE/Edge */
+			document.msExitFullscreen();
+		} else if (document.oExitFullscreen)      {
+			document.oExitFullscreen();
+		}
+	}
+
+	//ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+	function expand() {
+		var the     = document.BEHOLD3D;
+		var button  = document.getElementById('expand');
+		the.full = !the.full;
+		if (the.full) {
+			openFullscreen();
+			button.innerHTML = 'contract';
+		} else {
+			closeFullscreen();
+			button.innerHTML = 'expand';
+		}
+	}
+
+	//ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+	function turnPortrait() {
+		var the        = document.BEHOLD3D;
+		var contain = document.getElementById('container');
+		var viewing = -the.angle.screen;
+		contain.style.webkitTransform = 'rotate('+viewing+'deg)'; 
+		contain.style.mozTransform    = 'rotate('+viewing+'deg)'; 
+		contain.style.msTransform     = 'rotate('+viewing+'deg)'; 
+		contain.style.oTransform      = 'rotate('+viewing+'deg)'; 
+		contain.style.transform       = 'rotate('+viewing+'deg)'; 
+	}
+
+	//ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+	function adjustAngles() {
+		var the   = document.BEHOLD3D;
+		const lo       = [   the.unstable,  90+the.unstable];
+		const hi       = [90-the.unstable, 180-the.unstable];
+
+		if (false) {
+			var beta  = the.angle.beta;
+			var gamma = the.angle.gamma;
+
+			if (beta  === null || gamma === null) return;
+
+			the.range = !(
+				beta  < lo[0]                  || // beyond face up flat backwards
+				beta  > hi[1]                  || // beyond face dn flat forwards
+				(beta > lo[1] && beta < hi[0]) || // within unstable upright angle
+				gamma < -45                    || // tipped heavily sideways left
+				gamma > +45                       // tipped heavily sideways right
+			);
+
+			if (the.mobile && !the.range) return;
+
+			gamma += +(beta >= lo[1]) * 90;
+
+			the.angle.a = 0;
+			the.angle.b = parseInt(the.velocity * beta );
+			the.angle.c = parseInt(the.velocity * gamma);
+			the.angle.d = 0;
+		} else {
+			var the = document.BEHOLD3D;
+
+			the.range = false;
+
+			if (the.angle.beta >= lo[0] && the.angle.beta <= hi[0]) {
+				beta = the.angle.beta;
+			}
+			if (the.angle.beta >= lo[1] && the.angle.beta <= hi[1]) {
+				beta = the.angle.beta; // - 90;
+			}
+			if (the.angle.gamma >= -45 && the.angle.gamma <= 45) {
+				gamma = the.angle.gamma;
+			}
+
+			if (beta != null && gamma != null) {
+				the.angle.a = 0;
+				the.angle.b = parseInt(beta); // -90 + ((beta - 10) * 180) / 70);
+				the.angle.c = parseInt(2 * gamma);
+				the.angle.d = 0;
+				the.range = true;
+			}
+		}
+	}
+
+	//ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+	function basicAngles() {
+		var the = document.BEHOLD3D;
+		var cnv = document.getElementById("foreground");
+
+		if (cnv === null) {
+			cnv = document.createElement('canvas');
+			cnv.setAttribute('id'   , 'foreground');
+			cnv.setAttribute('class', 'foreground');
+			document.getElementById('display').appendChild(cnv);
+			document.getElementById('behold3D').innerHTML += HEREDOC(function() {/*
+		<div>
+		<table>
+<tr><td>alpha   </td><td id="alpha"   >Use Mobile</td><td id="a">object</td></tr>
+<tr><td>beta    </td><td id="beta"    >Use Mobile</td><td id="b"></td></tr>
+<tr><td>gamma   </td><td id="gamma"   >Use Mobile</td><td id="c"></td></tr>
+<tr><td>portrait</td><td id="portrait">Use Mobile</td><td id="d"></td></tr>
+		</table>
+		</div>
+		*/});
+		}
+
+		//ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+		function makeBackground() {
+			var tic        = the.center/18;
+			var edge       = 1+2*the.center;
+			var foreground = document.getElementById("foreground");
+			var ctx        = foreground.getContext("2d");
+
+			foreground.width  = the.width ;
+			foreground.height = the.height;
+
+			ctx.fillStyle = "#777777";
+			ctx.fillRect (0, 0, foreground.width, foreground.height);
+
+			// scope
+			ctx.beginPath();
+			ctx.arc(the.center, the.center, the.center, 0, the.twopi, false);
+			ctx.fillStyle = "#ffffff";
+			ctx.fill();
+
+			// reticle lines
+			ctx.beginPath();
+			ctx.strokeStyle = "#000000";
+			ctx.lineWidth = 1;
+			ctx.moveTo(the.center, 0);
+			ctx.lineTo(the.center, edge);
+			ctx.moveTo(0   , the.center);
+			ctx.lineTo(edge, the.center);
+			ctx.stroke();
+
+			// reticle rings
+			for (var ring=tic; ring<the.center; ring+=tic) {
+				ctx.beginPath();
+				ctx.arc(the.center, the.center, ring, 0, the.twopi, false);
+				ctx.lineWidth = 1;
+				ctx.strokeStyle = '#000000';
+				ctx.stroke();
+			}
+
+			message('Mobile 3D object viewer');
+
+			return ctx.getImageData(0, 0, the.width, the.height);
+		}
+
+		//ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+		function fillTabular() {
+			const angle = the.angle;
+			document.getElementById('alpha'   ).innerHTML = angle.alpha +'&deg;';
+			document.getElementById('beta'    ).innerHTML = angle.beta  +'&deg;';
+			document.getElementById('gamma'   ).innerHTML = angle.gamma +'&deg;';
+			document.getElementById('portrait').innerHTML = angle.screen+'&deg;';
+			document.getElementById('b'       ).innerHTML = angle.b     +'&deg;';
+			document.getElementById('c'       ).innerHTML = angle.c     +'&deg;';
+		}
+
+		//ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+		function drawGraphics() {
+			var foreground = document.getElementById("foreground");
+			var ctx        = foreground.getContext("2d");
+
+			// background
+			ctx.putImageData(the.background, 0, 0);
+
+			if (!the.angle) return;
+
+			var dial       = -(the.angle.alpha % the.modulo)*the.radians;
+			var vector     = {x: 1+Math.sin(dial), y: 1+Math.cos(dial)};
+			var offset     = parseInt(the.line / 2);
+			var jiggle     = the.center-offset;
+
+			// gamma
+			ctx.fillStyle = "#000077";
+			ctx.fillRect(the.center, jiggle, the.angle.gamma, the.line);
+
+			// beta
+			ctx.fillStyle = "#007700";
+			ctx.fillRect(jiggle, the.center, the.line, the.angle.beta * the.scale);
+
+			// alpha
+			ctx.beginPath();
+			ctx.strokeStyle = "#aa0000";
+			ctx.lineWidth   = the.line;
+			ctx.moveTo(the.center, the.center);
+			ctx.lineTo(vector.x*the.center, vector.y*the.center);
+			ctx.stroke();
+		}
+
+		the.background = the.background || makeBackground();
+		drawGraphics();
+		fillTabular ();
+		drawGraphics();
+		message("BASIC ANGLE REVIEW");
+	}
+
+	//ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+	function loadObjects() {
+		var the      = document.BEHOLD3D;
+		// (i.e. http://lettvin.com/newBBK/obj.html?mtl=index&obj=facet)
+		var mtlFiles = the.param.mtl.split(',');
+		var count = mtlFiles.length;
+		var path = '/theBBK/obj/';
+		var I     = count - 1;
+		var group    = new THREE.Object3D();
+
+		// Loop over and load all but last .mtl filenames
+		for(var i = 0; i < I; ++i) {
+			var mtlFile   = mtlFiles[i].trim() + '.mtl';
+			console.log("Materials from: ", mtlFile);
+			var mtlLoader = new THREE.MTLLoader();
+			mtlLoader.setPath(path);
+			mtlLoader.load(mtlFile, function(contents) {});
+		}
+
+		// Load last mtl filename
+		var mtlFile = mtlFiles[I].trim() + '.mtl';
+		console.log("Materials from: ", mtlFile);
+		var mtlLoader = new THREE.MTLLoader();
+		mtlLoader.setPath(path);
+		mtlLoader.load(mtlFile, function(contents) {
+			contents.preload();
+			//contents.materials.default.map.magFilter = THREE.NearestFilter;
+			//contents.materials.default.map.minFilter = THREE.LinearFilter;
+
+			var objLoader = new THREE.OBJLoader();
+			objLoader.setMaterials(contents);
+			objLoader.setPath(path);
+			var models = the.param.obj.split(',');
+
+			// Loop over and load all .obj filenames
+			models.forEach(function(model) {
+				model = model.trim();
+				console.log('Model from: ', model + '.obj');
+				objLoader.load( model + '.obj', function ( obj ) {
+					//object.rotation.z = Math.PI;
+					group.add( obj );
+					//document.querySelector('b').style.display = 'none';
+				} );
+			} );
+			//document.getElementById('status').innerHTML = 'Running';
+		});
+
+		the.art.thing = group;
+		the.art.scene.add(group);
+	/*
+		// https://lettvin.com/theBBK/behold3d.dev.html?mtl=index&obj=facet
+
+		var mtlFiles = the.param.mtl.split(',');
+		var count    = mtlFiles.length;
+		var path     = '/theBBK/obj/';
+		var I        = count - 1;
+		var group    = new THREE.Object3D();
+
+		the.art.thing = group;
+		the.art.scene.add(group);
+
+		objects();
+
+		// if (the.param.mtl) {
+			// var materials = the.param.mtl.split(',');
+			// const I = materials.length;
+			// var N = I;
+			// for (var i=0; i<I; ++i) {
+				// var material = materials[i] + '.mtl';
+				// var mtlLoader = new THREE.MTLLoader();
+				// mtlLoader.setPath(path);
+				// console.log(
+					// 'Materials will be loaded from', material,
+					// 'from directory', path);
+				// mtlLoader.load(material, function(contents) {
+					// contents.preload();
+					// // Only load objects after all materials have been acquired
+					// // this.lock.hold(() => { --N; this.lock.release(); });
+					// --N;
+					// if (N === 0) objects(contents);
+				// });
+				// console.log("Materials loaded");
+			// }
+		// }
+
+   // this.lock.hold(() => {fahrenheit celsius kelvin
+        // this.http.get('someUrl')
+           // .then((data)=>{
+               // this.data = data;
+               // this.lock.release();
+         // } )
+   // })
+
+		function objects() {
+			if (the.param.obj) {
+				var models = the.param.obj.split(',');
+				var mtlFile = the.param.mtl.split(',');
+				const I = models.length;
+				const N = I-1;
+				for (var i=0; i<I; ++i) {
+					var model = models[i];
+					const objLoader = new THREE.OBJLoader2();
+					//objLoader.setMaterials(materials);
+					objLoader.loadMtl('obj/' + mtlFile[0] + '.mtl');
+					objLoader.setPath(path);
+					objLoader.load(
+						model+'.obj',
+						function(obj) {
+						//(event) => { // after load completes, run this
+							//const obj = event.detail.loaderRootNode;
+							group.add(obj);
+							the.objects++;
+							visualize();
+						},
+						null,
+						(event) => { // onerror
+							message("failed to load", model);
+						});
+				};
+				message('Behold '+the.param.obj+' in 3D');
+			} else {
+				// default art work to show if none specified
+				const size = { x:30, y:30, z:30, };
+				const cube = { x:1, y:1, z:1, };
+				console.log("default object");
+				the.art = Object.assign({
+					geometry : new THREE.BoxGeometry(
+						size.x, size.y, size.z,
+						cube.x, cube.y, cube.z),
+					material : new THREE.MeshBasicMaterial(
+						{color: 0xfffff, wireframe: true}),
+				}, the.art);
+				var obj = new THREE.Mesh(the.art.geometry, the.art.material);
+				group.add(obj);
+				the.objects++;
+				message('Behold a wireframe cube in 3D');
+			}
+		}
+	*/
+	}
+
+	//ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+	function example() {
+		var the  = document.BEHOLD3D;
+
+		function initialize() {
+			var fov = 3e-1;
+			if (the.param.fov) {
+				fov = +the.param.fov;
+			}
+			the.art = {
+				renderer : new THREE.WebGLRenderer(),
+				scene    : new THREE.Scene(),
+				//camera   : new THREE.PerspectiveCamera(1e-2, 1, 1e-2, 1e5),
+				camera   : new THREE.PerspectiveCamera(fov, 1, 1e-1, 1e5),
+				light    : [
+					new THREE.PointLight(0xffffff, 1, 0),
+					new THREE.PointLight(0xffffff, 1, 0),
+					new THREE.AmbientLight(0x7777),
+				],
+			}
+			the.art.light[0].position.set(+1000, +1000, +1000);
+			the.art.light[1].position.set(-1000, -1000, -1000);
+			the.art.scene.add(the.art.light[0]);
+			the.art.scene.add(the.art.light[1]);
+			the.art.scene.add(the.art.light[2]);
+
+			loadObjects();
+
+        	the.art.camera.position.z = 10000;
+        	the.art.renderer.setSize(the.width, the.height);
+			document.getElementById('display').appendChild(
+				the.art.renderer.domElement);
+			the.art.running = true;
+		}
+
+		//ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+		function render() {
+			const status = ['Stopped', 'Running'];
+
+			if (!the.art.running) {
+				return;
+			}
+			var flip  = 0; //+(the.angle.beta >= 90) * 180;
+			var b = the.radians * ((the.angle.b + the.delta.b       ) % 360);
+			var c = the.radians * ((the.angle.c + the.delta.c + flip) % 360);
+
+			the.art.thing.rotation.x = b;
+			the.art.thing.rotation.y = c;
+			the.art.thing.rotation.z = 0;
+
+			the.art.renderer.render(the.art.scene, the.art.camera);
+		};
+
+		the.art || initialize();
+
+		render();
+	}
+
+	//ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+	function visualize() {
+		var the   = document.BEHOLD3D;
+		adjustAngles();
+		turnPortrait();
+		the.display();
+	}
+
+	//ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+	function zoom(coefficient) {
+		var the  = document.BEHOLD3D;
+		if (arguments.length === 1) the.param.fov *= coefficient;
+		the.art.camera.fov = the.param.fov;
+		the.art.camera.updateProjectionMatrix();
+	}
+
+	//ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+	function eventOrientationChange(event) {
+		if (typeof event.alpha === "number") {
+			var the   = document.BEHOLD3D;
+			the.mobile = true;
+			the.angle.alpha  = parseInt(event.alpha);
+			the.angle.beta   = parseInt(event.beta );
+			the.angle.gamma  = parseInt(event.gamma);
+			the.angle.screen = screen.orientation.angle;
+
+			visualize();
+			event.preventDefault();
+		}
+	}
+
+	//ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+	function eventTouchStart(event) {
+		var the  = document.BEHOLD3D;
+		the.mobile = true;
+		const I = Math.min(2, event.touches.length);
+		the.fingers = I;
+
+		the.drag = true;
+		for (var i = 0; i < I; ++i) {
+			the.touch[i].x = event.touches[i].clientX;
+			the.touch[i].y = event.touches[i].clientY;
+		}
+		if (I === 2) {
+			var x0 = event.touches[0].clientX;
+			var y0 = event.touches[0].clientY;
+			var x1 = event.touches[1].clientX;
+			var y1 = event.touches[1].clientY;
+			the.pinch = Math.sqrt((x1-x0)**2 + (y1-y0)**2);
+		}
+
+		visualize();
+		// event.preventDefault();  // allow button press
+	}
+
+	//ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+	function eventTouchMove(event) {
+		var the  = document.BEHOLD3D;
+
+		if (the.drag) {
+			const I = Math.min(2, event.touches.length);
+			if (I === 1) {
+				var x = event.touches[0].clientX;
+				var y = event.touches[0].clientY;
+				the.delta.c = x - the.touch[0].x;
+				the.delta.b = y - the.touch[0].y;
+			} else if (I === 2) {
+				// Pinch
+				var x0 = event.touches[0].clientX;
+				var y0 = event.touches[0].clientY;
+				var x1 = event.touches[1].clientX;
+				var y1 = event.touches[1].clientY;
+				var dr = Math.sqrt((x1-x0)**2 + (y1-y0)**2);
+				zoom(1 + 0.001 * (the.pinch - dr));
+			}
+
+			visualize();
+			// event.preventDefault();  // allow button press
+		}
+	}
+
+	//ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+	function eventTouchEnd(event) {
+		var the  = document.BEHOLD3D;
+		the.drag = false;
+		// event.preventDefault();  // allow button press
+	}
+
+	//ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+	function eventPointerDown(event) {
+		var the  = document.BEHOLD3D;
+		the.drag = true;
+		the.touch[0].x = event.x;
+		the.touch[0].y = event.y;
+
+		visualize();
+		event.preventDefault();
+	}
+
+	//ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+	function eventPointerMove(event) {
+		var the  = document.BEHOLD3D;
+		if (the.drag) {
+			var x = event.x;
+			var y = event.y;
+			the.delta.c = x - the.touch[0].x;
+			the.delta.b = y - the.touch[0].y;
+
+			visualize();
+			event.preventDefault();
+		}
+	}
+
+	//ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+	function eventPointerUp(event) {
+		var the  = document.BEHOLD3D;
+		the.drag = false;
+		event.preventDefault();
+	}
+
+	//ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+	function eventKeyDown(event) {
+		var the  = document.BEHOLD3D;
+		var change = false;
+		var b = the.delta.b;
+		var c = the.delta.c;
+		switch(event.code) {
+			case 'ArrowLeft':
+				the.delta.c = (the.delta.c - the.delta.d + 360) % 360;
+				change = true;
+				break;
+			case 'ArrowRight':
+				the.delta.c = (the.delta.c + the.delta.d) % 360;
+				change = true;
+				break;
+			case 'ArrowUp':
+				the.delta.b = (the.delta.b - the.delta.d + 360) % 360;
+				change = true;
+				break;
+			case 'ArrowDown':
+				the.delta.b = (the.delta.b + the.delta.d) % 360;
+				change = true;
+				break;
+			case 'PageDown':
+				zoom(0.9);
+				change = true;
+				break;
+			case 'PageUp':
+				zoom(1.1);
+				change = true;
+				break;
+		}
+		if (change) {
+			// TODO fix 0-355 transition
+			visualize();
+		}
+		event.preventDefault();
+	}
+
+	//ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+	function chooseObject() {
+		var the  = document.BEHOLD3D;
+		// TODO engage MTL, OBJ, etc...
+		if (the.param.test) {
+			the.display = basicAngles;  // default is orientation numbers/display
+		} else { //if (!the.param.obj) {
+			the.display = example;
+		/*} else {
+			switch(the.param.obj) {
+				case 'default':
+					the.display = example;
+					break;
+				default:
+					the.display = example;
+					break;
+			}
+		*/
+		}
+		the.display();
+		the.loader('BBK/simple.BBK');
+	}
+
+	//ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+	function getQuery() { // Extract query dictionary from query string
+		var the  = document.BEHOLD3D;
+		the.query = location.search.slice.length && location.search.slice(1);
+		var pairs = the.query.split('&');
+		pairs.forEach(function(pair) {
+			pair = pair.split('=');
+			if (pair.length == 1) {
+				the.param[pair[0]] = true;
+			} else if (pair.length == 2) {
+				var theString = decodeURIComponent(pair[1] || '');
+				var theNumber = Number(theString);
+				var theValue  = Number.isNaN(theNumber) ?
+					theString :
+					theNumber;
+				the.param[pair[0]] = theValue;
+			}
+		});
+	}
+
+	//ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+	function load() {
+		getQuery();
+		chooseObject();
+	}
+
+	//ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+	function main() {
+		var width = Math.min(window.innerWidth, window.innerHeight);
+		var small = width - 20;
+		var the = document.BEHOLD3D = document.BEHOLD3D || {}
+		the = document.BEHOLD3D = Object.assign(document.BEHOLD3D, {
+			angle   : { a:0, b:0, c:0, d:0, alpha:0, beta:0, gamma:0, },
+			delta   : { a:0, b:0, c:0, d:5, },  // d used as keyboard delta
+			drag    : false,
+			center  : small/2,
+			expand  : expand,
+			fingers : 0,
+			full    : false,
+			line    : 5,
+			mobile  : false,
+			modulo  : 360,
+			// count of objects ingested from .OBJ files
+			objects : 0,
+			// Contents of the querystring turned into a dictionary
+			param   : { mtl: '', obj: '', fov: 2e-2, },
+			// historical value of distance between two fingers
+			pinch   : 0,
+			// everyday constant used in a variety of calculations
+			radians : Math.PI/180,
+			// history of finger locations stored during events
+			touch   : [{ x:0, y:0, },{ x:0, y:0, },],
+			// everyday constant used in a variety of calculations
+			twopi   : 2*Math.PI,
+			// unstable protects against angle flipping at other angle zeros
+			unstable: 5,
+			// velocity is the coefficient changing magnitude of visible rotation
+			velocity: 5,
+			zoom    : 1,
+		});
+
+		Object.assign(the, {
+			height : 1+the.center*2,
+			scale  : 2*the.center/360,
+			width  : 1+the.center*2,
+		});
+
+		load();
+
+		window.addEventListener("deviceorientation", eventOrientationChange);
+		window.addEventListener("touchstart"       , eventTouchStart);
+		window.addEventListener("touchmove"        , eventTouchMove);
+		window.addEventListener("touchend"         , eventTouchEnd);
+		window.addEventListener("pointerdown"      , eventPointerDown);
+		window.addEventListener("pointermove"      , eventPointerMove);
+		window.addEventListener("pointerup"        , eventPointerUp);
+		window.addEventListener("keydown"          , eventKeyDown);
+	}
+
+	//()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+	main();
+})();
+    </script>
+</html>

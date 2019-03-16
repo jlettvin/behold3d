@@ -1,0 +1,110 @@
+# 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
+# File Created: 04.12.2016 11:33:59
+
+newmtl plaster_white
+	Ns 96.0784
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.8000 0.8000 0.8000
+	Kd 0.8000 0.8000 0.8000
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+#	map_Ka D:\works\3D_with_conceptArt\2015-2016_Herder\S_001_entrance_hall_with_staircase_corrections\plaster_white_1024.jpg
+#	map_Kd D:\works\3D_with_conceptArt\2015-2016_Herder\S_001_entrance_hall_with_staircase_corrections\plaster_white_1024.jpg
+
+newmtl S_ROOM_001_floor_tiles_TXTR
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5882 0.5882 0.5882
+	Kd 0.5882 0.5882 0.5882
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+#	map_Ka D:\works\3D_with_conceptArt\2015-2016_Herder\S_001_entrance_hall_with_staircase_corrections\S_ROOM_001_floor_tiles_TXTR.png
+#	map_Kd D:\works\3D_with_conceptArt\2015-2016_Herder\S_001_entrance_hall_with_staircase_corrections\S_ROOM_001_floor_tiles_TXTR.png
+
+newmtl plaster_grey
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5882 0.5882 0.5882
+	Kd 0.5882 0.5882 0.5882
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+#	map_Ka D:\works\3D_with_conceptArt\2015-2016_Herder\S_001_entrance_hall_with_staircase_corrections\plaster_gray_1024.JPG
+#	map_Kd D:\works\3D_with_conceptArt\2015-2016_Herder\S_001_entrance_hall_with_staircase_corrections\plaster_gray_1024.JPG
+
+newmtl wood_darker
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0353 0.0235 0.0157
+	Kd 0.0353 0.0235 0.0157
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+
+newmtl wood
+	Ns 32.6421
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 0.1845 0.1604 0.1324
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+
+newmtl S_ROOM_001_wall3_TXTR
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5882 0.5882 0.5882
+	Kd 0.5882 0.5882 0.5882
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+#	map_Ka D:\works\3D_with_conceptArt\2015-2016_Herder\S_001_entrance_hall_with_staircase_corrections\0_WALL3_TXTR.png
+#	map_Kd D:\works\3D_with_conceptArt\2015-2016_Herder\S_001_entrance_hall_with_staircase_corrections\0_WALL3_TXTR.png
+
+newmtl S_ROOM_001_wall1_TXTR
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5882 0.5882 0.5882
+	Kd 0.5882 0.5882 0.5882
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+#	map_Ka D:\works\3D_with_conceptArt\2015-2016_Herder\S_001_entrance_hall_with_staircase_corrections\0_WALL1_TXTR.png
+#	map_Kd D:\works\3D_with_conceptArt\2015-2016_Herder\S_001_entrance_hall_with_staircase_corrections\0_WALL1_TXTR.png
+
+newmtl S_ROOM_001_wall2_TXTR
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5882 0.5882 0.5882
+	Kd 0.5882 0.5882 0.5882
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+#	map_Ka D:\works\3D_with_conceptArt\2015-2016_Herder\S_001_entrance_hall_with_staircase_corrections\0_WALL2_TXTR.png
+#	map_Kd D:\works\3D_with_conceptArt\2015-2016_Herder\S_001_entrance_hall_with_staircase_corrections\0_WALL2_TXTR.png

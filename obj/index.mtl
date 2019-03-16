@@ -1,0 +1,130 @@
+# http://paulbourke.net/dataformats/mtl/
+# The Ka statement specifies the ambient reflectivity using RGB values.
+# The Ka xyz statement specifies the ambient reflectivity using CIEXYZ values.
+# The Kd statement specifies the diffuse reflectivity using RGB values.
+# The Kd xyz statement specifies the diffuse reflectivity using CIEXYZ values.
+# The Ks statement specifies the specular reflectivity using RGB values.
+# The Ks spectral statement specifies the specular reflectivity using a spectral curve.
+# The Ks xyz statement specifies the specular reflectivity using CIEXYZ values.
+# The Tf statement specifies the transmission filter using RGB values.
+# The Tf spectral statement specifies the transmission filterusing a spectral curve.
+# illum ==
+#  0	Color on and Ambient off
+#  1	Color on and Ambient on
+#  2	Highlight on
+#  3	Reflection on and Ray trace on
+#  4	Transparency: Glass on
+# 		Reflection: Ray trace on
+#  5	Reflection: Fresnel on and Ray trace on
+#  6	Transparency: Refraction on
+# 		Reflection: Fresnel off and Ray trace on
+#  7	Transparency: Refraction on
+# 		Reflection: Fresnel on and Ray trace on
+#  8	Reflection on and Ray trace off
+#  9	Transparency: Glass on
+# 		Reflection: Ray trace off
+# 10	Casts shadows onto invisible surfaces
+
+newmtl black
+Ka 0.0000 0.0000 0.0000
+Kd 0.0000 0.0000 0.0000
+illum 4
+d 0.6
+
+newmtl red
+Ka 1.0000 0.0000 0.0000
+Kd 1.0000 0.0000 0.0000
+illum 4
+d 1.0
+newmtl redt
+Ka 1.0000 0.0000 0.0000
+Kd 1.0000 0.0000 0.0000
+illum 4
+d 0.5
+newmtl red1
+Ka 1.0000 0.0000 0.0000
+Kd 1.0000 0.0000 0.0000
+illum 4
+d 0.1
+newmtl red2
+Ka 1.0000 0.0000 0.0000
+Kd 1.0000 0.0000 0.0000
+illum 4
+d 0.2
+newmtl red3
+Ka 1.0000 0.0000 0.0000
+Kd 1.0000 0.0000 0.0000
+illum 4
+d 0.3
+newmtl red4
+Ka 1.0000 0.0000 0.0000
+Kd 1.0000 0.0000 0.0000
+illum 4
+d 0.4
+newmtl red5
+Ka 1.0000 0.0000 0.0000
+Kd 1.0000 0.0000 0.0000
+illum 4
+d 0.5
+newmtl red6
+Ka 1.0000 0.0000 0.0000
+Kd 1.0000 0.0000 0.0000
+illum 4
+d 0.6
+newmtl red7
+Ka 1.0000 0.0000 0.0000
+Kd 1.0000 0.0000 0.0000
+illum 4
+d 0.7
+newmtl red8
+Ka 1.0000 0.0000 0.0000
+Kd 1.0000 0.0000 0.0000
+illum 4
+d 0.8
+newmtl red9
+Ka 1.0000 0.0000 0.0000
+Kd 1.0000 0.0000 0.0000
+illum 4
+d 0.9
+newmtl red10
+Ka 1.0000 0.0000 0.0000
+Kd 1.0000 0.0000 0.0000
+illum 4
+d 1.0
+
+newmtl yellow
+Ka 1.0000 1.0000 0.0000
+Kd 1.0000 1.0000 0.0000
+illum 4
+d 0.6
+
+newmtl green
+Ka 0.0000 1.0000 0.0000
+Kd 0.0000 1.0000 0.0000
+illum 4
+d 0.6
+
+newmtl cyan
+Ka 0.0000 1.0000 1.0000
+Kd 0.0000 1.0000 1.0000
+illum 4
+d 0.6
+
+newmtl blue
+Ka 0.0000 0.0000 1.0000
+Kd 0.0000 0.0000 1.0000
+illum 4
+d 0.6
+
+newmtl magenta
+Ka 1.0000 0.0000 1.0000
+Kd 1.0000 0.0000 1.0000
+illum 4
+d 0.6
+
+newmtl white
+Ka 1.0000 1.0000 1.0000
+Kd 1.0000 1.0000 1.0000
+illum 4
+d 0.6
+

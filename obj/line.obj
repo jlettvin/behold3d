@@ -1,0 +1,41 @@
+mtllib index.mtl
+v  1  1  1
+v -1  1  1
+v  1 -1  1
+v -1 -1  1
+v  1  1 -1
+v -1  1 -1
+v  1 -1 -1
+v -1 -1 -1
+
+v  2  2  3
+v -2  2  3
+v  2 -2  3
+v -2 -2  3
+v  2  2 -1
+v -2  2 -1
+v  2 -2 -1
+v -2 -2 -1
+
+v  2  2  3
+
+usemtl black
+l 1 2
+usemtl red
+l 2 3
+usemtl green
+l 3 4
+usemtl blue
+l 4 5
+usemtl yellow
+l 5 6
+usemtl cyan
+l 6 7
+usemtl magenta
+l 7 8
+usemtl white
+l 8 1
+usemtl white
+l  9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17
+# TODO research why 16 9 and 9 16 both cause failures
+# This problem forces use of duplicate point 17

@@ -1,0 +1,63 @@
+mtllib index.mtl
+v -1 -1 -100
+v -1 -1 0
+v -100 -100 141
+usemtl white
+l 1 2
+l 2 3
+
+v -1 +0 -100
+v -1 +0 0
+v -100   +0 100
+usemtl red
+l 4 5
+l 5 6
+
+v -1 +1 -100
+v -1 +1 0
+v -100 +100 141
+usemtl green
+l 7 8
+l 8 9
+
+v +0 -1 -100
+v +0 -1 0
+v +0   -100 141
+usemtl blue
+l 10 11
+l 11 12
+
+v +0 +0 -100
+v +0 +0 0
+v +0     +0 100
+usemtl yellow
+l 13 14
+l 14 15
+
+v +0 +1 -100
+v +0 +1 0
+v +0   +100 141
+usemtl cyan
+l 16 17
+l 17 18
+
+v +1 -1 -100
+v +1 -1 0
+v +100 -100 141
+usemtl magenta
+l 19 20
+l 20 21
+
+v +1 +0 -100
+v +1 +0 0
+v +100   +0 100
+usemtl white
+l 22 23
+l 23 24
+
+v +1 +1 -100
+v +1 +1 0
+v +100 +100 141
+usemtl red
+l 25 26
+l 26 27

@@ -1,0 +1,25 @@
+mtllib index.mtl
+v  1  1  1
+v -1  1  1
+v  1 -1  1
+v -1 -1  1
+v  1  1 -1
+v -1  1 -1
+v  1 -1 -1
+v -1 -1 -1
+usemtl black
+p 1
+usemtl red
+p 2
+usemtl green
+p 3
+usemtl blue
+p 4
+usemtl yellow
+p 5
+usemtl cyan
+p 6
+usemtl magenta
+p 7
+usemtl white
+p 8
